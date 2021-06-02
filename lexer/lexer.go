@@ -20,23 +20,11 @@ func New(input string) *Lexer {
 	return lex
 }
 
-func (lex *Lexer) readChar() {
-	// current implementation only supports ASCII chars
-	// to extend to unicode and UTF-8
-	//	1. change from byte to rune
-	//	2. change way of reading characters (to support multi-byte runes)
-
-	if lex.readPosition >= len(lex.input) {
-		lex.ch = 0 // NUL byte to indicate end of file
-	} else {
-		lex.ch = lex.input[lex.readPosition]
-	}
-	lex.position = lex.readPosition
-	lex.readPosition++
-}
-
 func (lex *Lexer) NextToken() token.Token {
 	var tok token.Token
+
+	// some languages check newlines. if so, then they can't be skipped
+	lex.skipWhitespace()
 
 	switch lex.ch {
 	case '=':
@@ -58,12 +46,77 @@ func (lex *Lexer) NextToken() token.Token {
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+	default:
+		if isIdentifierChar(lex.ch) {
+			tok.Literal = lex.readIdentifier()
+			tok.Type = token.LookupIdent(tok.Literal)
+			return tok
+		} else if isDigit(lex.ch) {
+			tok.Literal = lex.readInteger()
+			tok.Type = token.INT
+			return tok
+		} else {
+			tok = newToken(token.ILLEGAL, lex.ch)
+		}
 	}
 
 	lex.readChar()
 	return tok
 }
 
+func (lex *Lexer) readChar() {
+	// current implementation only supports ASCII chars
+	// to extend to unicode and UTF-8
+	//	1. change from byte to rune
+	//	2. change way of reading characters (to support multi-byte runes)
+
+	if lex.readPosition >= len(lex.input) {
+		lex.ch = 0 // NUL byte to indicate end of file
+	} else {
+		lex.ch = lex.input[lex.readPosition]
+	}
+	lex.position = lex.readPosition
+	lex.readPosition++
+}
+
+func (lex *Lexer) readIdentifier() string {
+	start := lex.position
+	for isIdentifierChar(lex.ch) {
+		lex.readChar()
+	}
+	return lex.input[start:lex.position]
+}
+
+func isIdentifierChar(ch byte) bool {
+	return isLetter(ch) || ch == '_'
+}
+
+func isLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
+}
+
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
+}
+
+func isWhitespace(ch byte) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
+}
+
+func (lex *Lexer) skipWhitespace() {
+	for isWhitespace(lex.ch) {
+		lex.readChar()
+	}
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
+func (lex *Lexer) readInteger() string {
+	start := lex.position
+	for isDigit(lex.ch) {
+		lex.readChar()
+	}
+	return lex.input[start:lex.position]
 }
