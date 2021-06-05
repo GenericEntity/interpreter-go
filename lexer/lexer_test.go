@@ -15,6 +15,14 @@ func TestNextToken(t *testing.T) {
 	};
 	
 	let result = add(five, ten);
+
+	if ( !((ten - five)/2 != 2*1)) {
+		let x = 2 < 3;
+		return true == true;
+	} else {
+		let x = 3 > 2;
+		return !!false;
+	}
 	`
 
 	tests := []struct {
@@ -26,11 +34,13 @@ func TestNextToken(t *testing.T) {
 		{token.ASSIGN, "="},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
+
 		{token.LET, "let"},
 		{token.IDENT, "ten"},
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
+
 		{token.LET, "let"},
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
@@ -47,6 +57,7 @@ func TestNextToken(t *testing.T) {
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
+
 		{token.LET, "let"},
 		{token.IDENT, "result"},
 		{token.ASSIGN, "="},
@@ -57,6 +68,54 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "ten"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
+
+		{token.IF, "if"},
+		{token.LPAREN, "("},
+		{token.BANG, "!"},
+		{token.LPAREN, "("},
+		{token.LPAREN, "("},
+		{token.IDENT, "ten"},
+		{token.MINUS, "-"},
+		{token.IDENT, "five"},
+		{token.RPAREN, ")"},
+		{token.SLASH, "/"},
+		{token.INT, "2"},
+		{token.NOT_EQ, "!="},
+		{token.INT, "2"},
+		{token.ASTERISK, "*"},
+		{token.INT, "1"},
+		{token.RPAREN, ")"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.LET, "let"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "2"},
+		{token.LT, "<"},
+		{token.INT, "3"},
+		{token.SEMICOLON, ";"},
+		{token.RETURN, "return"},
+		{token.TRUE, "true"},
+		{token.EQ, "=="},
+		{token.TRUE, "true"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.ELSE, "else"},
+		{token.LBRACE, "{"},
+		{token.LET, "let"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "3"},
+		{token.GT, ">"},
+		{token.INT, "2"},
+		{token.SEMICOLON, ";"},
+		{token.RETURN, "return"},
+		{token.BANG, "!"},
+		{token.BANG, "!"},
+		{token.FALSE, "false"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+
 		{token.EOF, ""},
 	}
 

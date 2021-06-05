@@ -9,6 +9,13 @@ type Lexer struct {
 	ch           byte // current character under examination
 }
 
+// TODO:
+//  floating point numbers
+//  hex notation, octal notation, binary notation
+//  identifiers with digits
+//  comments
+//  &&, ||
+
 func New(input string) *Lexer {
 	lex := &Lexer{
 		input: input,
@@ -28,7 +35,14 @@ func (lex *Lexer) NextToken() token.Token {
 
 	switch lex.ch {
 	case '=':
-		tok = newToken(token.ASSIGN, lex.ch)
+		if lex.peekChar() == '=' {
+			ch := lex.ch
+			lex.readChar()
+			literal := string(ch) + string(lex.ch)
+			tok = token.Token{Type: token.EQ, Literal: literal}
+		} else {
+			tok = newToken(token.ASSIGN, lex.ch)
+		}
 	case '+':
 		tok = newToken(token.PLUS, lex.ch)
 	case ';':
@@ -43,6 +57,26 @@ func (lex *Lexer) NextToken() token.Token {
 		tok = newToken(token.RBRACE, lex.ch)
 	case ',':
 		tok = newToken(token.COMMA, lex.ch)
+	case '!':
+		if lex.peekChar() == '=' {
+			firstChar := lex.ch
+			lex.readChar()
+			literal := string(firstChar) + string(lex.ch)
+			tok = token.Token{Type: token.NOT_EQ, Literal: literal}
+		} else {
+			tok = newToken(token.BANG, lex.ch)
+		}
+	case '-':
+		tok = newToken(token.MINUS, lex.ch)
+	case '/':
+		tok = newToken(token.SLASH, lex.ch)
+	case '*':
+		tok = newToken(token.ASTERISK, lex.ch)
+	case '<':
+		tok = newToken(token.LT, lex.ch)
+	case '>':
+		tok = newToken(token.GT, lex.ch)
+
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -62,6 +96,13 @@ func (lex *Lexer) NextToken() token.Token {
 
 	lex.readChar()
 	return tok
+}
+
+func (lex *Lexer) peekChar() byte {
+	if lex.readPosition >= len(lex.input) {
+		return 0
+	}
+	return lex.input[lex.readPosition]
 }
 
 func (lex *Lexer) readChar() {
