@@ -318,6 +318,22 @@ func TestOperatorPrecedence(t *testing.T) {
 		expected string
 	}{
 		{
+			"true",
+			"true",
+		},
+		{
+			"false",
+			"false",
+		},
+		{
+			"3 > 5 == false",
+			"((3 > 5) == false)",
+		},
+		{
+			"3 < 5 == true",
+			"((3 < 5) == true)",
+		},
+		{
 			"-a * b",
 			"((-a) * b)",
 		},
