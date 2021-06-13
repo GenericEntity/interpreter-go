@@ -255,6 +255,19 @@ func testIdentifier(t *testing.T, expr ast.Expression, value string) bool {
 	return true
 }
 
+func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface{}) bool {
+	switch v := expected.(type) {
+	case int:
+		return testIntegerLiteral(t, expr, int64(v))
+	case int64:
+		return testIntegerLiteral(t, expr, v)
+	case string:
+		return testIdentifier(t, expr, v)
+	}
+	t.Errorf("type of expr not handled. got=%T", expr)
+	return false
+}
+
 func TestInfixExpressions(t *testing.T) {
 	infixTests := []struct {
 		input      string
