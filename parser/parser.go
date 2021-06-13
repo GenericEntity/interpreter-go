@@ -308,6 +308,7 @@ func (p *Parser) parseGroupExpression() ast.Expression {
 	expr := p.parseExpression(LOWEST)
 
 	if !p.expectPeek(token.RPAREN) {
+		// TODO: should we return an error here indicating that we expected a closing paren?
 		return nil
 	}
 
