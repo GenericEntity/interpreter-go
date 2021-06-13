@@ -268,6 +268,29 @@ func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface
 	return false
 }
 
+func testInfixExpression(t *testing.T, expr ast.Expression, left interface{}, operator string, right interface{}) bool {
+	opExpr, ok := expr.(*ast.InfixExpression)
+	if !ok {
+		t.Errorf("expr is not *ast.InfixExpression. got=%T(%s)", expr, expr)
+		return false
+	}
+
+	if !testLiteralExpression(t, opExpr.Left, left) {
+		return false
+	}
+
+	if opExpr.Operator != operator {
+		t.Errorf("expr.Operator is not %s. got=%s", operator, opExpr.Operator)
+		return false
+	}
+
+	if !testLiteralExpression(t, opExpr.Right, right) {
+		return false
+	}
+
+	return true
+}
+
 func TestInfixExpressions(t *testing.T) {
 	infixTests := []struct {
 		input      string
