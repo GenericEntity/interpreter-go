@@ -379,3 +379,50 @@ func TestOperatorPrecedence(t *testing.T) {
 		}
 	}
 }
+
+func testBoolean(t *testing.T, expr ast.Expression, value bool) bool {
+	b, ok := expr.(*ast.Boolean)
+	if !ok {
+		t.Errorf("expr is not *ast.Boolean. got=%T", expr)
+		return false
+	}
+
+	if b.Value != value {
+		t.Errorf("b.Value is not %t. got=%t", value, b.Value)
+		return false
+	}
+
+	if b.TokenLiteral() != fmt.Sprintf("%t", value) {
+		t.Errorf("b.TokenLiteral() is not %t. got=%s", value, b.TokenLiteral())
+		return false
+	}
+	return true
+}
+
+func TestBooleanExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{"true;", true},
+		{"false;", false},
+	}
+
+	for _, tt := range tests {
+		lex := lexer.New(tt.input)
+		parser := New(lex)
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program does not have %d statement(s). got=%d", 1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		testBoolean(t, stmt.Expression, tt.expected)
+	}
+}
