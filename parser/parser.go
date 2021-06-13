@@ -144,6 +144,9 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
+// expectPeek checks the type of the next token.
+// If the type is t, then it consumes the current token and returns true.
+// Otherwise, it emits a peek error and returns false.
 func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
