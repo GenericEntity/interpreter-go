@@ -396,7 +396,7 @@ func TestOperatorPrecedence(t *testing.T) {
 	}
 }
 
-func testBoolean(t *testing.T, expr ast.Expression, value bool) bool {
+func testBooleanLiteral(t *testing.T, expr ast.Expression, value bool) bool {
 	b, ok := expr.(*ast.Boolean)
 	if !ok {
 		t.Errorf("expr is not *ast.Boolean. got=%T", expr)
@@ -439,6 +439,6 @@ func TestBooleanExpression(t *testing.T) {
 			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
 		}
 
-		testBoolean(t, stmt.Expression, tt.expected)
+		testBooleanLiteral(t, stmt.Expression, tt.expected)
 	}
 }
