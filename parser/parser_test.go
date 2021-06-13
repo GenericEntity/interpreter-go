@@ -278,9 +278,9 @@ func testInfixExpression(t *testing.T, expr ast.Expression, left interface{}, op
 func TestInfixExpressions(t *testing.T) {
 	infixTests := []struct {
 		input      string
-		leftValue  int64
+		leftValue  interface{}
 		operator   string
-		rightValue int64
+		rightValue interface{}
 	}{
 		{"5 + 6", 5, "+", 6},
 		{"5 - 6", 5, "-", 6},
@@ -290,6 +290,9 @@ func TestInfixExpressions(t *testing.T) {
 		{"5 < 6", 5, "<", 6},
 		{"5 == 6", 5, "==", 6},
 		{"5 != 6", 5, "!=", 6},
+		{"true == true", true, "==", true},
+		{"true != false", true, "!=", false},
+		{"false == false", false, "==", false},
 	}
 
 	for _, tt := range infixTests {
