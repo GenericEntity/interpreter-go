@@ -275,6 +275,18 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 
 	precedence := p.currPrecedence()
 	p.nextToken()
+	/*
+		if we want to make a particular left-associative operator into a right-associative
+		operator, we could do it here by passing in a lower precedence. This would make its
+		right-binding power weaker than its left. It doesn't mess with relative precedences.
+		E.g. imagine if there were an operator &, one lower than + and we want the following
+		behavior:
+
+		a + b & c + d = (a + b) & (c + d)
+		a + b + c + d = a + (b + (c + d))
+
+		Simply decreasing the right-binding power of + by 1 here would work. Try it!
+	*/
 	expr.Right = p.parseExpression(precedence)
 
 	return expr
