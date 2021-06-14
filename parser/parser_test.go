@@ -649,3 +649,39 @@ func TestFunctionLiteralParameters(t *testing.T) {
 		}
 	}
 }
+
+func TestCallExpression(t *testing.T) {
+	input := `add(1, 2 * 3, 4 + 5);`
+
+	lex := lexer.New(input)
+	parser := New(lex)
+	program := parser.ParseProgram()
+	checkParserErrors(t, parser)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program does not have %d statement(s). got=%d", 1, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	callExpr, ok := stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not *ast.CallExpression. got=%T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, callExpr.Function, "add") {
+		return
+	}
+
+	if len(callExpr.Arguments) != 3 {
+		t.Fatalf("callExpr has wrong number of arguments. expected=%d, got=%d",
+			3, len(callExpr.Arguments))
+	}
+
+	testLiteralExpression(t, callExpr.Arguments[0], 1)
+	testInfixExpression(t, callExpr.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, callExpr.Arguments[2], 4, "+", 5)
+}
