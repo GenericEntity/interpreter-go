@@ -40,6 +40,7 @@ func (p *Program) String() string {
 
 	for _, stmt := range p.Statements {
 		out.WriteString(stmt.String())
+		out.WriteString("\n")
 	}
 
 	return out.String()
@@ -124,7 +125,7 @@ func (es *ExpressionStatement) TokenLiteral() string {
 
 func (es *ExpressionStatement) String() string {
 	if es.Expression != nil {
-		return es.Expression.String()
+		return es.Expression.String() + ";"
 	}
 	return ""
 }
@@ -237,9 +238,13 @@ func (bs *BlockStatement) TokenLiteral() string {
 func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
 
+	out.WriteString("{\n")
 	for _, stmt := range bs.Statements {
+		out.WriteString("\t")
 		out.WriteString(stmt.String())
+		out.WriteString("\n")
 	}
+	out.WriteString("}")
 
 	return out.String()
 }
