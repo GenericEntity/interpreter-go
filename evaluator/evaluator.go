@@ -94,6 +94,14 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
+
+	// Uses pointer comparison to handle == and != for booleans
+	//  works because there are two singleton boolean objects, TRUE and FALSE
+	//  and requires all other overloads of == and != to be handled above these cases
+	case operator == "==":
+		return nativeBoolToBooleanObject(left == right)
+	case operator == "!=":
+		return nativeBoolToBooleanObject(left != right)
 	default:
 		return NULL
 	}
