@@ -164,9 +164,16 @@ func evalBlockStatement(stmts []ast.Statement, env *object.Environment) object.O
 
 	for _, stmt := range stmts {
 		result = Eval(stmt, env)
+
+		// Eval could return nil. e.g. for LET statements
+		if result == nil {
+			continue
+		}
+
 		rt := result.Type()
 
 		// Don't unwrap the return value yet (in case we're in a nested statement)
+		// This statement stops evaluation of later statements
 		if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
 			return result
 		}

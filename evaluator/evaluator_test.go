@@ -173,9 +173,49 @@ func TestReturnStatements(t *testing.T) {
 			if (10 > 1) {
 				return 10;
 			}
-			
+
 			return 1;
 		}`, 10},
+		{
+			`let add = fn(x, y) {x + y};
+			fn(){
+				let x = add(5, 2);
+				let y = add(-2, 5);
+				let z = add(1000, 2);
+				return x + y;
+			}()`,
+			10,
+		},
+		{
+			`
+			let f = fn(x) {
+			let result = x + 10;
+			return result;
+			return 10;
+			};
+			f(10);`,
+			20,
+		},
+		{
+			`
+			let f = fn(x) {
+			return x;
+			x + 10;
+			};
+			f(10);`,
+			10,
+		},
+		{
+			// ensure that the return statement in foo does not
+			// cause the outer function call to return
+			`
+			let foo = fn(){ return 10; }
+			fn(){
+				foo()
+				5;
+			}()`,
+			5,
+		},
 	}
 
 	for _, tt := range tests {
