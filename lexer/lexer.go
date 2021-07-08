@@ -1,6 +1,11 @@
 package lexer
 
-import "github.com/GenericEntity/interpreter-go/monkey/token"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/GenericEntity/interpreter-go/monkey/token"
+)
 
 type Lexer struct {
 	input        string
@@ -15,6 +20,19 @@ type Lexer struct {
 //  identifiers with digits
 //  comments
 //  &&, ||
+
+var escapeCharacterMap = map[byte]byte{
+	'\'': '\'',
+	'"':  '"',
+	'\\': '\\',
+	'a':  '\a',
+	'b':  '\b',
+	'f':  '\f',
+	'n':  '\n',
+	'r':  '\r',
+	't':  '\t',
+	'v':  '\v',
+}
 
 func New(input string) *Lexer {
 	lex := &Lexer{
@@ -76,6 +94,14 @@ func (lex *Lexer) NextToken() token.Token {
 		tok = newToken(token.LT, lex.ch)
 	case '>':
 		tok = newToken(token.GT, lex.ch)
+
+	case '"':
+		var err error
+		tok.Type = token.STRING
+		tok.Literal, err = lex.readString()
+		if err != nil {
+			tok.Type = token.ILLEGAL
+		}
 
 	case 0:
 		tok.Literal = ""
@@ -160,4 +186,39 @@ func (lex *Lexer) readInteger() string {
 		lex.readChar()
 	}
 	return lex.input[start:lex.position]
+}
+
+func isEscapeCharacter(ch byte) bool {
+	return ch == '\\'
+}
+
+func (lex *Lexer) readString() (string, error) {
+	var str strings.Builder
+	for {
+		lex.readChar()
+		ch := lex.ch
+
+		// handle unexpected end of file
+		if lex.ch == 0 {
+			return "", fmt.Errorf("unexpected EOF encountered while reading string")
+		}
+
+		// handle end of string
+		if lex.ch == '"' {
+			break
+		}
+
+		// handle escape sequences AFTER testing for EOF or end of string
+		if isEscapeCharacter(lex.ch) {
+			lex.readChar()
+			escChar, ok := escapeCharacterMap[lex.ch]
+			if !ok {
+				return "", fmt.Errorf("unknown escape sequence: '\\%v'", lex.ch)
+			}
+			ch = escChar
+		}
+
+		str.WriteByte(ch)
+	}
+	return str.String(), nil
 }
