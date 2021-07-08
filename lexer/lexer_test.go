@@ -23,6 +23,11 @@ func TestNextToken(t *testing.T) {
 		let x = 3 > 2;
 		return !!false;
 	}
+
+	"foobar"
+	"foo bar"
+	"\'\"\\\a\b\f\n\r\t\v"
+	"Hello\t\"WORLD\"\n"
 	`
 
 	tests := []struct {
@@ -115,6 +120,11 @@ func TestNextToken(t *testing.T) {
 		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
+
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
+		{token.STRING, "'\"\\\a\b\f\n\r\t\v"},
+		{token.STRING, "Hello\t\"WORLD\"\n"},
 
 		{token.EOF, ""},
 	}
