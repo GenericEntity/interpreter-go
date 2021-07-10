@@ -501,6 +501,17 @@ func TestArraySubscriptExpression(t *testing.T) {
 		{`[1, true][fn(x,y){x+y}(-1, 9-8)]`, 1},
 		{`[1, true][5*2 - 9]`, true},
 		{`["hi", "there"][5*2 - 9]`, "there"},
+		{`[fn(x){x + 1}, fn(x){x + 2}][1](5)`, 7},
+		{
+			`let arr = [3, 2, 1, 0]
+			arr[0]`,
+			3,
+		},
+		{
+			`let arr = [3, 2, 1, 0]
+			arr[0] + arr[2] + arr[1] + arr[3]`,
+			6,
+		},
 
 		{"[1, true][2]", errors.New("index out of range: 2. array length: 2")},
 		{"[1, true][-1]", errors.New("index out of range: -1. array length: 2")},
