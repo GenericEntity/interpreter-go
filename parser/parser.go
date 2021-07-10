@@ -471,7 +471,5 @@ func (p *Parser) parseSubscriptExpression(arr ast.Expression) ast.Expression {
 		return nil
 	}
 
-	p.nextToken() // swallow ]
-
 	return subscriptExpr
 }
