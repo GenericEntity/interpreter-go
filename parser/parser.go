@@ -81,6 +81,7 @@ func New(lex *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseSubscriptExpression)
 
 	// Read two tokens, so currToken and nextToken are both set
 	p.nextToken()
@@ -459,4 +460,18 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 	arr := &ast.ArrayLiteral{Token: p.currToken}
 	arr.Elements = p.parseSeparatedExpressions(token.COMMA, token.RBRACKET)
 	return arr
+}
+
+func (p *Parser) parseSubscriptExpression(arr ast.Expression) ast.Expression {
+	subscriptExpr := &ast.SubscriptExpression{Token: p.currToken, Array: arr}
+	p.nextToken() // swallow [
+
+	subscriptExpr.Index = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	p.nextToken() // swallow ]
+
+	return subscriptExpr
 }
