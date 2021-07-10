@@ -97,6 +97,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.ArrayLiteral:
 		return evalArrayLiteral(node, env)
+
+	case *ast.SubscriptExpression:
+		return evalSubscriptExpression(node, env)
 	}
 
 	return nil
@@ -347,4 +350,32 @@ func evalArrayLiteral(arr *ast.ArrayLiteral, env *object.Environment) object.Obj
 	}
 
 	return &object.Array{Elements: exprs}
+}
+
+func evalSubscriptExpression(subscriptExpr *ast.SubscriptExpression, env *object.Environment) object.Object {
+	arrayObject := Eval(subscriptExpr.Array, env)
+	if isError(arrayObject) {
+		return arrayObject
+	}
+
+	array, ok := arrayObject.(*object.Array)
+	if !ok {
+		return newError("subscript operator not supported for non-array type: %s", arrayObject.Type())
+	}
+
+	indexObj := Eval(subscriptExpr.Index, env)
+	if isError(indexObj) {
+		return indexObj
+	}
+
+	index, ok := indexObj.(*object.Integer)
+	if !ok {
+		return newError("argument to subscript not supported, got %s", indexObj.Type())
+	}
+
+	if index.Value < 0 || index.Value >= int64(len(array.Elements)) {
+		return newError("index out of range: %d. array length: %d", index.Value, len(array.Elements))
+	}
+
+	return array.Elements[index.Value]
 }
