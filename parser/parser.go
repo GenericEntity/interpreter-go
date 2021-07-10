@@ -37,6 +37,7 @@ var precedences = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: CALL,
 }
 
 type Parser struct {
@@ -68,6 +69,7 @@ func New(lex *lexer.Lexer) *Parser {
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -421,34 +423,40 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 
 func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
 	callExpr := &ast.CallExpression{Token: p.currToken, Function: fn}
-	callExpr.Arguments = p.parseCallExpressionArguments()
+	callExpr.Arguments = p.parseSeparatedExpressions(token.COMMA, token.RPAREN)
 	return callExpr
 }
 
-func (p *Parser) parseCallExpressionArguments() []ast.Expression {
-	args := []ast.Expression{}
+func (p *Parser) parseSeparatedExpressions(separator, closingDelimiter token.TokenType) []ast.Expression {
+	exprs := []ast.Expression{}
 
-	if p.peekTokenIs(token.RPAREN) {
+	if p.peekTokenIs(closingDelimiter) {
 		p.nextToken()
-		return args
+		return exprs
 	}
 
 	p.nextToken()
-	args = append(args, p.parseExpression(LOWEST))
+	exprs = append(exprs, p.parseExpression(LOWEST))
 
-	for p.peekTokenIs(token.COMMA) {
+	for p.peekTokenIs(separator) {
 		p.nextToken()
 		p.nextToken()
-		args = append(args, p.parseExpression(LOWEST))
+		exprs = append(exprs, p.parseExpression(LOWEST))
 	}
 
-	if !p.expectPeek(token.RPAREN) {
+	if !p.expectPeek(closingDelimiter) {
 		return nil
 	}
 
-	return args
+	return exprs
 }
 
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.currToken, Value: p.currToken.Literal}
+}
+
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	arr := &ast.ArrayLiteral{Token: p.currToken}
+	arr.Elements = p.parseSeparatedExpressions(token.COMMA, token.RBRACKET)
+	return arr
 }
