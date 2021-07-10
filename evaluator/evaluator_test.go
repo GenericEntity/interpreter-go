@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/GenericEntity/interpreter-go/monkey/lexer"
@@ -438,5 +439,78 @@ func TestArrayLiteral(t *testing.T) {
 				t.Fatalf("unsupported type in expected: %T", elem)
 			}
 		}
+	}
+}
+
+func testObject(t *testing.T, obj object.Object, expected interface{}) bool {
+	switch expected := expected.(type) {
+	case int:
+		return testIntegerObject(t, obj, int64(expected))
+	case int64:
+		return testIntegerObject(t, obj, expected)
+	case bool:
+		return testBooleanObject(t, obj, expected)
+	case string:
+		return testStringObject(t, obj, expected)
+	case error:
+		return testErrorObject(t, obj, expected.Error())
+
+	default:
+		t.Fatalf("unsupported type in expected: %T", expected)
+		return false
+	}
+}
+
+func testStringObject(t *testing.T, obj object.Object, expected string) bool {
+	str, ok := obj.(*object.String)
+	if !ok {
+		t.Errorf("object is not string. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	if str.Value != expected {
+		t.Errorf("String has wrong value. expected=%q. got=%q", expected, str.Value)
+		return false
+	}
+
+	return true
+}
+
+func testErrorObject(t *testing.T, obj object.Object, expectedMsg string) bool {
+	errObj, ok := obj.(*object.Error)
+	if !ok {
+		t.Errorf("object is not Error. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	if errObj.Message != expectedMsg {
+		t.Errorf("wrong error message. expected=%q, got=%q", expectedMsg, errObj.Message)
+		return false
+	}
+
+	return true
+}
+
+func TestArraySubscriptExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"[1,2, 3][1];", 2},
+		{"[true, false][0]", true},
+		{`[1, true][fn(x,y){x+y}(-1, 9-8)]`, 1},
+		{`[1, true][5*2 - 9]`, true},
+		{`["hi", "there"][5*2 - 9]`, "there"},
+		{"[1, true][2]", errors.New("index out of range: 2. array length: 2")},
+		{"[1, true][-1]", errors.New("index out of range: -1. array length: 2")},
+
+		{`[][true]`, "argument to subscript not supported, got BOOLEAN"},
+		{`[][fn(x){x}]`, "argument to subscript not supported, got FUNCTION"},
+		{`[]["hi"]`, "argument to subscript not supported, got STRING"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testObject(t, evaluated, tt.expected)
 	}
 }
