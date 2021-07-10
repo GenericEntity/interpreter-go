@@ -329,7 +329,7 @@ func (al *ArrayLiteral) String() string {
 		out.WriteString(e.String())
 
 		if i != len(al.Elements)-1 {
-			out.WriteString(",")
+			out.WriteString(", ")
 		}
 	}
 	out.WriteString("]")
@@ -350,10 +350,11 @@ func (se *SubscriptExpression) TokenLiteral() string {
 func (se *SubscriptExpression) String() string {
 	var out bytes.Buffer
 
+	out.WriteString("(")
 	out.WriteString(se.Array.String())
 	out.WriteString("[")
 	out.WriteString(se.Index.String())
-	out.WriteString("]")
+	out.WriteString("])")
 
 	return out.String()
 }
