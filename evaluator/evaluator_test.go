@@ -501,12 +501,15 @@ func TestArraySubscriptExpression(t *testing.T) {
 		{`[1, true][fn(x,y){x+y}(-1, 9-8)]`, 1},
 		{`[1, true][5*2 - 9]`, true},
 		{`["hi", "there"][5*2 - 9]`, "there"},
+
 		{"[1, true][2]", errors.New("index out of range: 2. array length: 2")},
 		{"[1, true][-1]", errors.New("index out of range: -1. array length: 2")},
-
 		{`[][true]`, errors.New("argument to subscript not supported, got BOOLEAN")},
 		{`[][fn(x){x}]`, errors.New("argument to subscript not supported, got FUNCTION")},
 		{`[]["hi"]`, errors.New("argument to subscript not supported, got STRING")},
+		{`fn(x){x}["hi"]`, errors.New("subscript operator not supported for non-array type: FUNCTION")},
+		{`"I'm not an array"[0]`, errors.New("subscript operator not supported for non-array type: STRING")},
+		{`1[0]`, errors.New("subscript operator not supported for non-array type: INTEGER")},
 	}
 
 	for _, tt := range tests {
