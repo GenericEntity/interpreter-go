@@ -334,3 +334,24 @@ func (al *ArrayLiteral) String() string {
 
 	return out.String()
 }
+
+type SubscriptExpression struct {
+	Token token.Token // the "[" literal
+	Array Expression
+	Index Expression
+}
+
+func (se *SubscriptExpression) expressionNode() {}
+func (se *SubscriptExpression) TokenLiteral() string {
+	return se.Token.Literal
+}
+func (se *SubscriptExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(se.Array.String())
+	out.WriteString("[")
+	out.WriteString(se.Index.String())
+	out.WriteString("]")
+
+	return out.String()
+}

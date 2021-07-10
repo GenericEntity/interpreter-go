@@ -786,3 +786,54 @@ func TestArrayLiteralExpression(t *testing.T) {
 		}
 	}
 }
+
+func testArrayLiteral(t *testing.T, arr ast.Expression, expectedElems []interface{}) bool {
+	array, ok := arr.(*ast.ArrayLiteral)
+	if !ok {
+		t.Errorf("arr not *ast.ArrayLiteral. got=%T", arr)
+		return false
+	}
+
+	if len(array.Elements) != len(expectedElems) {
+		t.Errorf("array.Elements has wrong length. expected=%d, got=%d", len(expectedElems), len(array.Elements))
+		return false
+	}
+
+	for i, e := range expectedElems {
+		testLiteralExpression(t, array.Elements[i], e)
+	}
+
+	// empty array
+	return true
+}
+
+func TestArraySubscriptExpression(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedElems []interface{}
+		expectedIndex int
+	}{
+		{input: `[1,2, 3][1];`, expectedElems: []interface{}{1, 2, 3}, expectedIndex: 1},
+		{input: `[true, false][0];`, expectedElems: []interface{}{true, false}, expectedIndex: 0},
+		{input: `[1, true][59]`, expectedElems: []interface{}{1, true}, expectedIndex: 59},
+		{input: `[][10]`, expectedElems: []interface{}{}, expectedIndex: 10},
+		{input: `[1][1]`, expectedElems: []interface{}{1}, expectedIndex: 1},
+	}
+
+	for _, tt := range tests {
+		lex := lexer.New(tt.input)
+		parser := New(lex)
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		subscriptExpr, ok := stmt.Expression.(*ast.SubscriptExpression)
+		if !ok {
+			t.Fatalf("expr not *ast.SubscriptExpression. got=%T", stmt.Expression)
+		}
+
+		testArrayLiteral(t, subscriptExpr.Array, tt.expectedElems)
+
+		testIntegerLiteral(t, subscriptExpr.Index, int64(tt.expectedIndex))
+	}
+}
