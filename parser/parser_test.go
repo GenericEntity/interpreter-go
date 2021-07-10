@@ -411,6 +411,10 @@ func TestOperatorPrecedence(t *testing.T) {
 			"add(a + b + c * d / f + g)",
 			"add((((a + b) + ((c * d) / f)) + g))",
 		},
+		{
+			"[fn(x){x + 1}, fn(x){x + 2}][1](5)",
+			"[fn(x){(x + 1)},fn(x){(x + 2)}][1](5)",
+		},
 	}
 
 	for _, tt := range tests {
