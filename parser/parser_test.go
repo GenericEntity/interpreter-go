@@ -755,14 +755,14 @@ func TestStringLiteralExpression(t *testing.T) {
 
 func TestArrayLiteralExpression(t *testing.T) {
 	tests := []struct {
-		input          string
-		expectedParams []interface{}
+		input         string
+		expectedElems []interface{}
 	}{
-		{input: `[1,2, 3];`, expectedParams: []interface{}{1, 2, 3}},
-		{input: `[true, false];`, expectedParams: []interface{}{true, false}},
-		{input: `[1, true]`, expectedParams: []interface{}{1, true}},
-		{input: `[]`, expectedParams: []interface{}{}},
-		{input: `[1]`, expectedParams: []interface{}{1}},
+		{input: `[1,2, 3];`, expectedElems: []interface{}{1, 2, 3}},
+		{input: `[true, false];`, expectedElems: []interface{}{true, false}},
+		{input: `[1, true]`, expectedElems: []interface{}{1, true}},
+		{input: `[]`, expectedElems: []interface{}{}},
+		{input: `[1]`, expectedElems: []interface{}{1}},
 	}
 
 	for _, tt := range tests {
@@ -777,11 +777,11 @@ func TestArrayLiteralExpression(t *testing.T) {
 			t.Fatalf("expr not *ast.ArrayLiteral. got=%T", stmt.Expression)
 		}
 
-		if len(arr.Elements) != len(tt.expectedParams) {
-			t.Fatalf("literal.Elements is of wrong length. got=%d, want=%d", len(arr.Elements), len(tt.expectedParams))
+		if len(arr.Elements) != len(tt.expectedElems) {
+			t.Fatalf("literal.Elements is of wrong length. got=%d, want=%d", len(arr.Elements), len(tt.expectedElems))
 		}
 
-		for i, elem := range tt.expectedParams {
+		for i, elem := range tt.expectedElems {
 			testLiteralExpression(t, arr.Elements[i], elem)
 		}
 	}
