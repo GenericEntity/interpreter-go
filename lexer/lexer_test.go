@@ -28,6 +28,8 @@ func TestNextToken(t *testing.T) {
 	"foo bar"
 	"\'\"\\\a\b\f\n\r\t\v"
 	"Hello\t\"WORLD\"\n"
+	[2,3,4]
+	arr[true, 3]
 	`
 
 	tests := []struct {
@@ -125,6 +127,20 @@ func TestNextToken(t *testing.T) {
 		{token.STRING, "foo bar"},
 		{token.STRING, "'\"\\\a\b\f\n\r\t\v"},
 		{token.STRING, "Hello\t\"WORLD\"\n"},
+
+		{token.LBRACKET, "["},
+		{token.INT, "2"},
+		{token.COMMA, ","},
+		{token.INT, "3"},
+		{token.COMMA, ","},
+		{token.INT, "4"},
+		{token.RBRACKET, "]"},
+		{token.IDENT, "arr"},
+		{token.LBRACKET, "["},
+		{token.TRUE, "true"},
+		{token.COMMA, ","},
+		{token.INT, "3"},
+		{token.RBRACKET, "]"},
 
 		{token.EOF, ""},
 	}
