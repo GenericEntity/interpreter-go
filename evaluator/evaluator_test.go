@@ -406,3 +406,37 @@ func TestBuiltinFunctions(t *testing.T) {
 		}
 	}
 }
+
+func TestArrayLiteral(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []interface{}
+	}{
+		{"[1,2, 3]", []interface{}{1, 2, 3}},
+		{"[true, true, false]", []interface{}{true, true, false}},
+		{"[1, true]", []interface{}{1, true}},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		arr, ok := evaluated.(*object.Array)
+		if !ok {
+			t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if len(arr.Elements) != len(tt.expected) {
+			t.Fatalf("array has wrong number of elements. expected=%d, got=%d", len(tt.expected), len(arr.Elements))
+		}
+
+		for i, elem := range tt.expected {
+			switch elem := elem.(type) {
+			case int:
+				testIntegerObject(t, arr.Elements[i], int64(elem))
+			case bool:
+				testBooleanObject(t, arr.Elements[i], elem)
+			default:
+				t.Fatalf("unsupported type in expected: %T", elem)
+			}
+		}
+	}
+}
