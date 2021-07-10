@@ -103,6 +103,11 @@ func (lex *Lexer) NextToken() token.Token {
 			tok.Type = token.ILLEGAL
 		}
 
+	case '[':
+		tok = newToken(token.LBRACKET, lex.ch)
+	case ']':
+		tok = newToken(token.RBRACKET, lex.ch)
+
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
