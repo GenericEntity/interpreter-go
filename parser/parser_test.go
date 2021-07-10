@@ -752,3 +752,37 @@ func TestStringLiteralExpression(t *testing.T) {
 		t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
 	}
 }
+
+func TestArrayLiteralExpression(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []interface{}
+	}{
+		{input: `[1,2, 3];`, expectedParams: []interface{}{1, 2, 3}},
+		{input: `[true, false];`, expectedParams: []interface{}{true, false}},
+		{input: `[1, true]`, expectedParams: []interface{}{1, true}},
+		{input: `[]`, expectedParams: []interface{}{}},
+		{input: `[1]`, expectedParams: []interface{}{1}},
+	}
+
+	for _, tt := range tests {
+		lex := lexer.New(tt.input)
+		parser := New(lex)
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		arr, ok := stmt.Expression.(*ast.ArrayLiteral)
+		if !ok {
+			t.Fatalf("expr not *ast.ArrayLiteral. got=%T", stmt.Expression)
+		}
+
+		if len(arr.Elements) != len(tt.expectedParams) {
+			t.Fatalf("literal.Elements is of wrong length. got=%d, want=%d", len(arr.Elements), len(tt.expectedParams))
+		}
+
+		for i, elem := range tt.expectedParams {
+			testLiteralExpression(t, arr.Elements[i], elem)
+		}
+	}
+}
