@@ -13,6 +13,11 @@ import (
 
 const PROMPT = ">> "
 
+func Greet(out io.Writer, name string) {
+	fmt.Fprintf(out, "Hello %s! This is a generic REPL for the Monkey Programming Language!\n", name)
+	fmt.Fprintf(out, "Please enjoy the infinite loop of interpretation! (CTRL-C to terminate)\n")
+}
+
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
