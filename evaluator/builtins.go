@@ -32,4 +32,23 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
+
+	"first": {
+		Fn: func(args ...object.Object) object.Object {
+			if err := checkArgsLen(1, args...); err != nil {
+				return err
+			}
+
+			switch arg := args[0].(type) {
+			case *object.Array:
+				if len(arg.Elements) == 0 {
+					return newError("`first` should not be called on empty array")
+				}
+				return arg.Elements[0]
+
+			default:
+				return newTypeNotSupportedError("first", arg)
+			}
+		},
+	},
 }
