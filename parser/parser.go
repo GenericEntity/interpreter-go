@@ -70,6 +70,7 @@ func New(lex *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
+	p.registerPrefix(token.LBRACE, p.parseHashLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -472,4 +473,46 @@ func (p *Parser) parseSubscriptExpression(arr ast.Expression) ast.Expression {
 	}
 
 	return subscriptExpr
+}
+
+func (p *Parser) parseHashLiteral() ast.Expression {
+	hash := &ast.HashLiteral{Token: p.currToken}
+	hash.Pairs = p.parseHashPairs()
+	return hash
+}
+
+func (p *Parser) parseHashPairs() map[ast.Expression]ast.Expression {
+	pairs := map[ast.Expression]ast.Expression{}
+
+	if p.peekTokenIs(token.RBRACE) {
+		p.nextToken()
+		return pairs
+	}
+
+	p.nextToken()
+	key := p.parseExpression(LOWEST)
+	if !p.expectPeek(token.COLON) {
+		return nil
+	}
+	p.nextToken()
+	value := p.parseExpression(LOWEST)
+	pairs[key] = value
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		key := p.parseExpression(LOWEST)
+		if !p.expectPeek(token.COLON) {
+			return nil
+		}
+		p.nextToken()
+		value := p.parseExpression(LOWEST)
+		pairs[key] = value
+	}
+
+	if !p.expectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return pairs
 }
