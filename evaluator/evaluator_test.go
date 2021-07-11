@@ -381,11 +381,19 @@ func TestBuiltinFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
+		// len(String)
 		{`len("")`, 0},
 		{`len("four")`, 4},
 		{`len("hello world")`, 11},
 		{`len(1)`, "argument to `len` not supported, got INTEGER"},
 		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
+
+		// len(Array)
+		{`len([])`, 0},
+		{`len([3])`, 1},
+		{`len(["string", true])`, 2},
+		{`let arr = [0, 0, 0]; len(arr)`, 3},
+		{`let arr = fn(){ [1,2] }(); len(arr)`, 2},
 	}
 
 	for _, tt := range tests {
