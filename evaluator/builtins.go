@@ -51,4 +51,24 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
+
+	"last": {
+		Fn: func(args ...object.Object) object.Object {
+			if err := checkArgsLen(1, args...); err != nil {
+				return err
+			}
+
+			switch arg := args[0].(type) {
+			case *object.Array:
+				length := len(arg.Elements)
+				if length == 0 {
+					return newError("`last` should not be called on empty array")
+				}
+				return arg.Elements[length-1]
+
+			default:
+				return newTypeNotSupportedError("last", arg)
+			}
+		},
+	},
 }
