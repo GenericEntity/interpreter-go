@@ -6,7 +6,7 @@ The interpreted language is [Monkey](https://interpreterbook.com/#the-monkey-pro
 Note: it is not a fully-fledged Monkey interpreter yet (no support for objects and hashes yet)
 
 ## Dependencies
-* [Golang](https://golang.org/)
+* [Golang](https://golang.org/) (I used `v1.13`, but earlier versions may work too)
 
 ## How to use
 ### Read from file
