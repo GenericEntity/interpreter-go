@@ -8,6 +8,10 @@ import (
 	"github.com/GenericEntity/interpreter-go/monkey/lexer"
 )
 
+type id struct {
+	name string
+}
+
 func TestLetStatements(t *testing.T) {
 	// proper testing would mock the lexer
 	tests := []struct {
@@ -17,7 +21,7 @@ func TestLetStatements(t *testing.T) {
 	}{
 		{"let x = 5;", "x", 5},
 		{"let y = true;", "y", true},
-		{"let foobar = y;", "foobar", "y"},
+		{"let foobar = y;", "foobar", id{"y"}},
 	}
 
 	for _, tt := range tests {
@@ -85,7 +89,7 @@ func TestReturnStatements(t *testing.T) {
 	}{
 		{"return 5;", 5},
 		{"return true;", true},
-		{"return a;", "a"},
+		{"return a;", id{"a"}},
 	}
 
 	for _, tt := range tests {
@@ -236,7 +240,9 @@ func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface
 	case int64:
 		return testIntegerLiteral(t, expr, v)
 	case string:
-		return testIdentifier(t, expr, v)
+		return testStringLiteral(t, expr, v)
+	case id:
+		return testIdentifier(t, expr, v.name)
 	case bool:
 		return testBooleanLiteral(t, expr, v)
 	}
@@ -498,7 +504,7 @@ func TestIfExpression(t *testing.T) {
 		t.Fatalf("stmt.Expression is not *ast.IfExpression. got=%T", stmt.Expression)
 	}
 
-	if !testInfixExpression(t, expr.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, expr.Condition, id{"x"}, "<", id{"y"}) {
 		return
 	}
 
@@ -540,7 +546,7 @@ func TestIfElseExpression(t *testing.T) {
 		t.Fatalf("stmt.Expression is not *ast.IfExpression. got=%T", stmt.Expression)
 	}
 
-	if !testInfixExpression(t, expr.Condition, "x", "<", "y") {
+	if !testInfixExpression(t, expr.Condition, id{"x"}, "<", id{"y"}) {
 		return
 	}
 
@@ -600,8 +606,8 @@ func TestFunctionLiteral(t *testing.T) {
 		t.Fatalf("function does not have %d parameter(s). got=%d", 2, len(function.Parameters))
 	}
 
-	testLiteralExpression(t, function.Parameters[0], "x")
-	testLiteralExpression(t, function.Parameters[1], "y")
+	testLiteralExpression(t, function.Parameters[0], id{"x"})
+	testLiteralExpression(t, function.Parameters[1], id{"y"})
 
 	if len(function.Body.Statements) != 1 {
 		t.Fatalf("function body does not have %d statement(s). got=%d", 1, len(function.Body.Statements))
@@ -613,17 +619,17 @@ func TestFunctionLiteral(t *testing.T) {
 			function.Body.Statements[0])
 	}
 
-	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+	testInfixExpression(t, bodyStmt.Expression, id{"x"}, "+", id{"y"})
 }
 
 func TestFunctionLiteralParameters(t *testing.T) {
 	tests := []struct {
 		input          string
-		expectedParams []string
+		expectedParams []id
 	}{
-		{input: "fn(){};", expectedParams: []string{}},
-		{input: "fn(x){};", expectedParams: []string{"x"}},
-		{input: "fn(x, y, z){};", expectedParams: []string{"x", "y", "z"}},
+		{input: "fn(){};", expectedParams: []id{}},
+		{input: "fn(x){};", expectedParams: []id{{"x"}}},
+		{input: "fn(x, y, z){};", expectedParams: []id{{"x"}, {"y"}, {"z"}}},
 	}
 
 	for _, tt := range tests {
@@ -679,12 +685,12 @@ func TestCallExpression(t *testing.T) {
 func TestCallExpressionParameters(t *testing.T) {
 	tests := []struct {
 		input          string
-		expectedParams []string
+		expectedParams []interface{}
 	}{
-		{input: "nullary();", expectedParams: []string{}},
-		{input: "unary(x);", expectedParams: []string{"x"}},
-		{input: "binary(a, b);", expectedParams: []string{"a", "b"}},
-		{input: "ternary(x, y, z);", expectedParams: []string{"x", "y", "z"}},
+		{input: "nullary();", expectedParams: []interface{}{}},
+		{input: "unary(x);", expectedParams: []interface{}{id{"x"}}},
+		{input: "binary(a, b);", expectedParams: []interface{}{id{"a"}, id{"b"}}},
+		{input: "ternary(x, y, z);", expectedParams: []interface{}{id{"x"}, id{"y"}, id{"z"}}},
 	}
 
 	for _, tt := range tests {
@@ -854,4 +860,19 @@ func TestHashLiteralExpression(t *testing.T) {
 			}
 		}
 	}
+}
+
+func testStringLiteral(t *testing.T, expr ast.Expression, expectedValue string) bool {
+	str, ok := expr.(*ast.StringLiteral)
+	if !ok {
+		t.Errorf("expr not *ast.StringLiteral. got=%T", expr)
+		return false
+	}
+
+	if str.Value != expectedValue {
+		t.Errorf("str.Value not %s. got=%s.", expectedValue, str.Value)
+		return false
+	}
+
+	return true
 }
