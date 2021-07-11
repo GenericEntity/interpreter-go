@@ -94,4 +94,24 @@ var builtins = map[string]*object.Builtin{
 			}
 		},
 	},
+
+	"push": {
+		Fn: func(args ...object.Object) object.Object {
+			if err := checkArgsLen(2, args...); err != nil {
+				return err
+			}
+
+			switch arg := args[0].(type) {
+			case *object.Array:
+				length := len(arg.Elements)
+				elems := make([]object.Object, length+1)
+				copy(elems, arg.Elements)
+				elems[length] = args[1]
+				return &object.Array{Elements: elems}
+
+			default:
+				return newTypeNotSupportedError("push", arg)
+			}
+		},
+	},
 }
