@@ -427,6 +427,19 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`rest(true)`, errors.New("argument to `rest` not supported, got BOOLEAN")},
 		{`rest([])`, errors.New("`rest` should not be called on empty array")},
 		{`rest(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
+
+		// push(Array, elem)
+		{`push([3], 2)`, []interface{}{3, 2}},
+		{`push(["string", true], "hi")`, []interface{}{"string", true, "hi"}},
+		{`let arr = [0, 1, 2]; push(arr, 3)`, []interface{}{0, 1, 2, 3}},
+		{`let arr = fn(){ [1,2] }(); push(arr, false)`, []interface{}{1, 2, false}},
+		{`push([], 1)`, []interface{}{1}},
+		{`push(["one"], ["two"])`, []interface{}{"one", []interface{}{"two"}}},
+		{`push("asd", 2)`, errors.New("argument to `push` not supported, got STRING")},
+		{`push(5, 1)`, errors.New("argument to `push` not supported, got INTEGER")},
+		{`push(true, 8)`, errors.New("argument to `push` not supported, got BOOLEAN")},
+		{`push(["one"], "two", "three")`, errors.New("wrong number of arguments. got=3, want=2")},
+		{`push(["one"])`, errors.New("wrong number of arguments. got=1, want=2")},
 	}
 
 	for _, tt := range tests {
