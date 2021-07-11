@@ -30,6 +30,7 @@ func TestNextToken(t *testing.T) {
 	"Hello\t\"WORLD\"\n"
 	[2,3,4]
 	arr[true, 3]
+	aHash{"key1": "value1", 5: "value2" }
 	`
 
 	tests := []struct {
@@ -141,6 +142,17 @@ func TestNextToken(t *testing.T) {
 		{token.COMMA, ","},
 		{token.INT, "3"},
 		{token.RBRACKET, "]"},
+
+		{token.IDENT, "aHash"},
+		{token.LBRACE, "{"},
+		{token.STRING, "key1"},
+		{token.COLON, ":"},
+		{token.STRING, "value1"},
+		{token.COMMA, ","},
+		{token.INT, "5"},
+		{token.COLON, ":"},
+		{token.STRING, "value2"},
+		{token.RBRACE, "}"},
 
 		{token.EOF, ""},
 	}
