@@ -807,3 +807,51 @@ func testParse(t *testing.T, input string) *ast.Program {
 
 	return program
 }
+
+func TestHashLiteralExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected map[interface{}]interface{}
+	}{
+		{`{1: 2, 2: 4, 3: 6};`, map[interface{}]interface{}{1: 2, 2: 4, 3: 6}},
+		{`{true: 1, 2: false};`, map[interface{}]interface{}{true: 1, 2: false}},
+		{`{}`, map[interface{}]interface{}{}},
+	}
+
+	for _, tt := range tests {
+		program := testParse(t, tt.input)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		if !ok {
+			t.Fatalf("expr not *ast.HashLiteral. got=%T", stmt.Expression)
+		}
+
+		if len(hash.Pairs) != len(tt.expected) {
+			t.Fatalf("hash.Pairs is of wrong length. got=%d, want=%d", len(hash.Pairs), len(tt.expected))
+		}
+
+		for key, val := range hash.Pairs {
+			var expectedKey interface{}
+
+			switch key := key.(type) {
+			case *ast.IntegerLiteral:
+				expectedKey = int(key.Value)
+
+			case *ast.Boolean:
+				expectedKey = key.Value
+
+			case *ast.StringLiteral:
+				expectedKey = key.Value
+
+			default:
+				t.Fatalf("unsupported key type to test: %T (%+v)", key, key)
+			}
+
+			expectedVal, ok := tt.expected[expectedKey]
+			if !ok || !testLiteralExpression(t, val, expectedVal) {
+				t.Fatalf("hash.Pairs contains unexpected pair: <%+v, %+v>.", key, val)
+			}
+		}
+	}
+}

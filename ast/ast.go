@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/GenericEntity/interpreter-go/monkey/token"
@@ -355,6 +356,30 @@ func (se *SubscriptExpression) String() string {
 	out.WriteString("[")
 	out.WriteString(se.Index.String())
 	out.WriteString("])")
+
+	return out.String()
+}
+
+type HashLiteral struct {
+	Token token.Token // the "{" literal
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode() {}
+func (hl *HashLiteral) TokenLiteral() string {
+	return hl.Token.Literal
+}
+func (hl *HashLiteral) String() string {
+	var out bytes.Buffer
+
+	pairs := make([]string, len(hl.Pairs))
+	for key, val := range hl.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", key, val))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
 
 	return out.String()
 }
