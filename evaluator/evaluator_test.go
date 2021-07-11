@@ -405,6 +405,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`first(true)`, errors.New("argument to `first` not supported, got BOOLEAN")},
 		{`first([])`, errors.New("`first` should not be called on empty array")},
 		{`first(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
+
+		// last(Array)
+		{`last([3])`, 3},
+		{`last(["string", true])`, true},
+		{`let arr = [0, 1, 2]; last(arr)`, 2},
+		{`let arr = fn(){ [1,2] }(); last(arr)`, 2},
+		{`last("asd")`, errors.New("argument to `last` not supported, got STRING")},
+		{`last(5)`, errors.New("argument to `last` not supported, got INTEGER")},
+		{`last(true)`, errors.New("argument to `last` not supported, got BOOLEAN")},
+		{`last([])`, errors.New("`last` should not be called on empty array")},
+		{`last(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
 	}
 
 	for _, tt := range tests {
