@@ -394,6 +394,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len(["string", true])`, 2},
 		{`let arr = [0, 0, 0]; len(arr)`, 3},
 		{`let arr = fn(){ [1,2] }(); len(arr)`, 2},
+
+		// first(Array)
+		{`first([3])`, 3},
+		{`first(["string", true])`, "string"},
+		{`let arr = [0, 1, 2]; first(arr)`, 0},
+		{`let arr = fn(){ [1,2] }(); first(arr)`, 1},
+		{`first("asd")`, errors.New("argument to `first` not supported, got STRING")},
+		{`first(5)`, errors.New("argument to `first` not supported, got INTEGER")},
+		{`first(true)`, errors.New("argument to `first` not supported, got BOOLEAN")},
+		{`first([])`, errors.New("`first` should not be called on empty array")},
+		{`first(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
 	}
 
 	for _, tt := range tests {
