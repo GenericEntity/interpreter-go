@@ -416,6 +416,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`last(true)`, errors.New("argument to `last` not supported, got BOOLEAN")},
 		{`last([])`, errors.New("`last` should not be called on empty array")},
 		{`last(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
+
+		// rest(Array)
+		{`rest([3])`, []interface{}{}},
+		{`rest(["string", true])`, []interface{}{true}},
+		{`let arr = [0, 1, 2]; rest(arr)`, []interface{}{1, 2}},
+		{`let arr = fn(){ [1,2] }(); rest(arr)`, []interface{}{2}},
+		{`rest("asd")`, errors.New("argument to `rest` not supported, got STRING")},
+		{`rest(5)`, errors.New("argument to `rest` not supported, got INTEGER")},
+		{`rest(true)`, errors.New("argument to `rest` not supported, got BOOLEAN")},
+		{`rest([])`, errors.New("`rest` should not be called on empty array")},
+		{`rest(["one"], ["two"])`, errors.New("wrong number of arguments. got=2, want=1")},
 	}
 
 	for _, tt := range tests {
@@ -470,11 +481,35 @@ func testObject(t *testing.T, obj object.Object, expected interface{}) bool {
 		return testStringObject(t, obj, expected)
 	case error:
 		return testErrorObject(t, obj, expected.Error())
+	case []interface{}:
+		return testArray(t, obj, expected)
 
 	default:
 		t.Fatalf("unsupported type in expected: %T", expected)
 		return false
 	}
+}
+
+func testArray(t *testing.T, obj object.Object, expected []interface{}) bool {
+	arr, ok := obj.(*object.Array)
+	if !ok {
+		t.Errorf("object is not Array. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	if len(arr.Elements) != len(expected) {
+		t.Errorf("Array has wrong length. expected=%d. got=%d", len(expected), len(arr.Elements))
+		return false
+	}
+
+	for i, val := range expected {
+		if !testObject(t, arr.Elements[i], val) {
+			t.Errorf("Array has wrong value at index %d. expected=%v. got=%v", i, val, arr.Elements[i])
+			return false
+		}
+	}
+
+	return true
 }
 
 func testStringObject(t *testing.T, obj object.Object, expected string) bool {
