@@ -821,6 +821,8 @@ func TestHashLiteralExpression(t *testing.T) {
 	}{
 		{`{1: 2, 2: 4, 3: 6};`, map[interface{}]interface{}{1: 2, 2: 4, 3: 6}},
 		{`{true: 1, 2: false};`, map[interface{}]interface{}{true: 1, 2: false}},
+		{`{x: 2, y: 1}`, map[interface{}]interface{}{id{"x"}: 2, id{"y"}: 1}},
+		{`{"hi": 2, "there": 1}`, map[interface{}]interface{}{"hi": 2, "there": 1}},
 		{`{}`, map[interface{}]interface{}{}},
 	}
 
@@ -838,23 +840,26 @@ func TestHashLiteralExpression(t *testing.T) {
 		}
 
 		for key, val := range hash.Pairs {
-			var expectedKey interface{}
+			var expectedVal interface{}
+			var ok bool
 
 			switch key := key.(type) {
 			case *ast.IntegerLiteral:
-				expectedKey = int(key.Value)
+				expectedVal, ok = tt.expected[int(key.Value)]
 
 			case *ast.Boolean:
-				expectedKey = key.Value
+				expectedVal, ok = tt.expected[key.Value]
 
 			case *ast.StringLiteral:
-				expectedKey = key.Value
+				expectedVal, ok = tt.expected[key.Value]
+
+			case *ast.Identifier:
+				expectedVal, ok = tt.expected[id{key.Value}]
 
 			default:
 				t.Fatalf("unsupported key type to test: %T (%+v)", key, key)
 			}
 
-			expectedVal, ok := tt.expected[expectedKey]
 			if !ok || !testLiteralExpression(t, val, expectedVal) {
 				t.Fatalf("hash.Pairs contains unexpected pair: <%+v, %+v>.", key, val)
 			}
