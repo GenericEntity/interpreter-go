@@ -521,6 +521,15 @@ func TestArraySubscriptExpression(t *testing.T) {
 		{`fn(x){x}["hi"]`, errors.New("subscript operator not supported for non-array type: FUNCTION")},
 		{`"I'm not an array"[0]`, errors.New("subscript operator not supported for non-array type: STRING")},
 		{`1[0]`, errors.New("subscript operator not supported for non-array type: INTEGER")},
+
+		{"[1, 2, 3][0]", 1},
+		{"[1, 2, 3][1]", 2},
+		{"[1, 2, 3][2]", 3},
+		{"let i = 0; [1][i];", 1},
+		{"[1, 2, 3][1 + 1];", 3},
+		{"let myArray = [1, 2, 3]; myArray[2];", 3},
+		{"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6},
+		{"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2},
 	}
 
 	for _, tt := range tests {
