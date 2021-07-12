@@ -1,6 +1,10 @@
 package evaluator
 
-import "github.com/GenericEntity/interpreter-go/monkey/object"
+import (
+	"fmt"
+
+	"github.com/GenericEntity/interpreter-go/monkey/object"
+)
 
 func checkArgsLen(wantedLength int, args ...object.Object) *object.Error {
 	if len(args) != wantedLength {
@@ -112,6 +116,15 @@ var builtins = map[string]*object.Builtin{
 			default:
 				return newTypeNotSupportedError("push", arg)
 			}
+		},
+	},
+
+	"puts": {
+		Fn: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+			return NULL
 		},
 	},
 }
