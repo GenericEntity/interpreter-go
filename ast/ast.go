@@ -340,7 +340,7 @@ func (al *ArrayLiteral) String() string {
 
 type SubscriptExpression struct {
 	Token token.Token // the "[" literal
-	Array Expression
+	Left  Expression
 	Index Expression
 }
 
@@ -352,7 +352,7 @@ func (se *SubscriptExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("(")
-	out.WriteString(se.Array.String())
+	out.WriteString(se.Left.String())
 	out.WriteString("[")
 	out.WriteString(se.Index.String())
 	out.WriteString("])")

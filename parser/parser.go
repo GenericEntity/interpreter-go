@@ -464,7 +464,7 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 }
 
 func (p *Parser) parseSubscriptExpression(arr ast.Expression) ast.Expression {
-	subscriptExpr := &ast.SubscriptExpression{Token: p.currToken, Array: arr}
+	subscriptExpr := &ast.SubscriptExpression{Token: p.currToken, Left: arr}
 	p.nextToken() // swallow [
 
 	subscriptExpr.Index = p.parseExpression(LOWEST)

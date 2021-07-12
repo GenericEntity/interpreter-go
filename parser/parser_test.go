@@ -799,7 +799,7 @@ func TestArraySubscriptExpression(t *testing.T) {
 			t.Fatalf("expr not *ast.SubscriptExpression. got=%T", stmt.Expression)
 		}
 
-		testArrayLiteral(t, subscriptExpr.Array, tt.expectedElems)
+		testArrayLiteral(t, subscriptExpr.Left, tt.expectedElems)
 
 		testIntegerLiteral(t, subscriptExpr.Index, int64(tt.expectedIndex))
 	}

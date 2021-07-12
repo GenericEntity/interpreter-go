@@ -356,7 +356,7 @@ func evalArrayLiteral(arr *ast.ArrayLiteral, env *object.Environment) object.Obj
 }
 
 func evalSubscriptExpression(subscriptExpr *ast.SubscriptExpression, env *object.Environment) object.Object {
-	arrayObject := Eval(subscriptExpr.Array, env)
+	arrayObject := Eval(subscriptExpr.Left, env)
 	if isError(arrayObject) {
 		return arrayObject
 	}
