@@ -391,16 +391,8 @@ func evalPairExpressions(exprs map[ast.Expression]ast.Expression, env *object.En
 			return nil, evaluatedKey
 		}
 
-		var hashKey object.HashKey
-		switch k := evaluatedKey.(type) {
-		case *object.Integer:
-			hashKey = k.HashKey()
-		case *object.Boolean:
-			hashKey = k.HashKey()
-		case *object.String:
-			hashKey = k.HashKey()
-
-		default:
+		hashable, ok := evaluatedKey.(object.Hashable)
+		if !ok {
 			return nil, newError("invalid key type: %s", evaluatedKey.Type())
 		}
 
@@ -409,12 +401,12 @@ func evalPairExpressions(exprs map[ast.Expression]ast.Expression, env *object.En
 			return nil, evaluatedVal
 		}
 
-		_, duplicateKey := result[hashKey]
+		_, duplicateKey := result[hashable.HashKey()]
 		if duplicateKey {
 			return nil, newError("duplicate key: %s", evaluatedKey.Inspect())
 		}
 
-		result[hashKey] = object.HashPair{Key: evaluatedKey, Value: evaluatedVal}
+		result[hashable.HashKey()] = object.HashPair{Key: evaluatedKey, Value: evaluatedVal}
 	}
 
 	return result, nil
