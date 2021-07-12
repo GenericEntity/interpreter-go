@@ -31,4 +31,4 @@ fact(5)
 ## License
 Note: A lot of the code in this repository follows the code presented in the book very closely. The main differences are a slightly nicer testing framework, a flag to interpret from a file, and support for escape characters in strings.
 
-Thorsten Ball licensed his code under the MIT license, His license file has been reproduced here as the file `LICENSES/LICENSE_THORSTEN_BALL`.
+Thorsten Ball licensed his code under the MIT license. His license file has been reproduced here as the file `LICENSES/LICENSE_THORSTEN_BALL`.
