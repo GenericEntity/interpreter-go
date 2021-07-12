@@ -100,6 +100,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.SubscriptExpression:
 		return evalSubscriptExpression(node, env)
+
+	case *ast.HashLiteral:
+		return evalHashLiteral(node, env)
 	}
 
 	return nil
@@ -378,4 +381,49 @@ func evalSubscriptExpression(subscriptExpr *ast.SubscriptExpression, env *object
 	}
 
 	return array.Elements[index.Value]
+}
+
+func evalPairExpressions(exprs map[ast.Expression]ast.Expression, env *object.Environment) (map[object.HashKey]object.HashPair, object.Object) {
+	result := make(map[object.HashKey]object.HashPair, len(exprs))
+	for key, val := range exprs {
+		evaluatedKey := Eval(key, env)
+		if isError(evaluatedKey) {
+			return nil, evaluatedKey
+		}
+
+		var hashKey object.HashKey
+		switch k := evaluatedKey.(type) {
+		case *object.Integer:
+			hashKey = k.HashKey()
+		case *object.Boolean:
+			hashKey = k.HashKey()
+		case *object.String:
+			hashKey = k.HashKey()
+
+		default:
+			return nil, newError("invalid key type: %s", evaluatedKey.Type())
+		}
+
+		evaluatedVal := Eval(val, env)
+		if isError(evaluatedVal) {
+			return nil, evaluatedVal
+		}
+
+		_, duplicateKey := result[hashKey]
+		if duplicateKey {
+			return nil, newError("duplicate key: %s", evaluatedKey.Inspect())
+		}
+
+		result[hashKey] = object.HashPair{Key: evaluatedKey, Value: evaluatedVal}
+	}
+
+	return result, nil
+}
+
+func evalHashLiteral(hash *ast.HashLiteral, env *object.Environment) object.Object {
+	pairs, err := evalPairExpressions(hash.Pairs, env)
+	if err != nil {
+		return err
+	}
+	return &object.Hash{Pairs: pairs}
 }
