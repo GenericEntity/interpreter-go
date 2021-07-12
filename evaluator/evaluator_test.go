@@ -483,6 +483,10 @@ func TestArrayLiteral(t *testing.T) {
 }
 
 func testObject(t *testing.T, obj object.Object, expected interface{}) bool {
+	if expected == nil {
+		return testNullObject(t, obj)
+	}
+
 	switch expected := expected.(type) {
 	case int:
 		return testIntegerObject(t, obj, int64(expected))
@@ -663,6 +667,31 @@ func TestHashLiteral(t *testing.T) {
 		{`{{1: 2}: 2}`, errors.New("invalid key type: HASH")},
 		{`{fn(){}: 2}`, errors.New("invalid key type: FUNCTION")},
 		{`{1: 2, 1: 3}`, errors.New("duplicate key: 1")},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestHashSubscriptExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`{1: 2, 2: 4, 3: 6}[1];`, 2},
+		{`{true: 1, 2: false}[true];`, 1},
+		{`{"hi": 2, "there": 1}["there"]`, 1},
+		{`let x = "x"; let y = "not y"; {x: 2, y: 1}["not y"]`, 1},
+		{`fn(){ {2 * 2: 2, 5 == 10: 1} }()[8/2];`, 2},
+
+		{`{}[1]`, nil},
+		{`{"hi": 2, "there": 1}["asd"]`, nil},
+
+		{`{"hi": 2, "there": 1}[[1,2]]`, errors.New("invalid key type: ARRAY")},
+		{`{"hi": 2, "there": 1}[{1: 2}]`, errors.New("invalid key type: HASH")},
+		{`{"hi": 2, "there": 1}[fn(){}]`, errors.New("invalid key type: FUNCTION")},
 	}
 
 	for _, tt := range tests {
