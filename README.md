@@ -1,9 +1,7 @@
 # Interpreter in Golang
-This is my 2021 summer personal project: to learn how to build an interpreter from scratch: lexer, parser and evaluator. The whole project is based on Thorsten Ball's [excellent book](https://interpreterbook.com/), so I do not take credit for its design or implementation.
+This is my 2021 summer personal project: to learn how to build an interpreter from scratch: lexer, parser and evaluator. The whole project is based on Thorsten Ball's [excellent book](https://interpreterbook.com/), so I do not take credit for its design or implementation (except a few minor add-ons).
 
 The interpreted language is [Monkey](https://interpreterbook.com/#the-monkey-programming-language), designed by Thorsten Ball.
-
-Note: it is not a fully-fledged Monkey interpreter yet (no support for objects and hashes yet)
 
 ## Dependencies
 * [Golang](https://golang.org/) (I used `v1.13`, but earlier versions may work too)
@@ -29,3 +27,8 @@ fact(5)
 ```
 
 3. Enjoy! This step is mandatory.
+
+## License
+Note: A lot of the code in this repository follows the code presented in the book very closely. The main differences are a slightly nicer testing framework, a flag to interpret from a file, and support for escape characters in strings.
+
+Thorsten Ball licensed his code under the MIT license, His license file has been reproduced here as the file `LICENSES/LICENSE_THORSTEN_BALL`.
