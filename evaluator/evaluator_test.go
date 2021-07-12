@@ -496,6 +496,8 @@ func testObject(t *testing.T, obj object.Object, expected interface{}) bool {
 		return testErrorObject(t, obj, expected.Error())
 	case []interface{}:
 		return testArray(t, obj, expected)
+	case map[interface{}]interface{}:
+		return testHash(t, obj, expected)
 
 	default:
 		t.Fatalf("unsupported type in expected: %T", expected)
@@ -594,6 +596,73 @@ func TestArraySubscriptExpression(t *testing.T) {
 		{"let myArray = [1, 2, 3]; myArray[2];", 3},
 		{"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6},
 		{"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testObject(t, evaluated, tt.expected)
+	}
+}
+
+func testHash(t *testing.T, obj object.Object, expected map[interface{}]interface{}) bool {
+	hash, ok := obj.(*object.Hash)
+	if !ok {
+		t.Errorf("object is not Hash. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	if len(hash.Pairs) != len(expected) {
+		t.Errorf("hash has wrong number of pairs. expected=%d, got=%d", len(expected), len(hash.Pairs))
+		return false
+	}
+
+	for _, pair := range hash.Pairs {
+		var expectedVal interface{}
+		var ok bool
+
+		switch key := pair.Key.(type) {
+		case *object.Integer:
+			expectedVal, ok = expected[int(key.Value)]
+			if !ok {
+				expectedVal, ok = expected[key.Value]
+			}
+
+		case *object.Boolean:
+			expectedVal, ok = expected[key.Value]
+
+		case *object.String:
+			expectedVal, ok = expected[key.Value]
+
+		default:
+			t.Errorf("unsupported key type to test: %T (%+v)", key, key)
+			return false
+		}
+
+		if !ok || !testObject(t, pair.Value, expectedVal) {
+			t.Errorf("hash.Pairs contains unexpected pair: <%+v, %+v>.", pair.Key, pair.Value)
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestHashLiteral(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`{}`, map[interface{}]interface{}{}},
+		{`{1: 2, 2: 4, 3: 6};`, map[interface{}]interface{}{1: 2, 2: 4, 3: 6}},
+		{`{true: 1, 2: false};`, map[interface{}]interface{}{true: 1, 2: false}},
+		{`{"hi": 2, "there": 1}`, map[interface{}]interface{}{"hi": 2, "there": 1}},
+		{`let x = "x"; let y = "not y"; {x: 2, y: 1}`, map[interface{}]interface{}{"x": 2, "not y": 1}},
+		{`fn(){ {2 * 2: 2, 5 == 10: 1} }();`, map[interface{}]interface{}{4: 2, false: 1}},
+
+		{`{[1]: 2}`, errors.New("invalid key type: ARRAY")},
+		{`{{1: 2}: 2}`, errors.New("invalid key type: HASH")},
+		{`{fn(){}: 2}`, errors.New("invalid key type: FUNCTION")},
+		{`{1: 2, 1: 3}`, errors.New("duplicate key: 1")},
 	}
 
 	for _, tt := range tests {
