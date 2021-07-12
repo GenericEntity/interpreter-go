@@ -368,25 +368,10 @@ func evalSubscriptExpression(subscriptExpr *ast.SubscriptExpression, env *object
 
 	switch left := left.(type) {
 	case *object.Array:
-		index, ok := indexObj.(*object.Integer)
-		if !ok {
-			return newError("non-integer argument to array subscript not supported, got %s", indexObj.Type())
-		}
-		if index.Value < 0 || index.Value >= int64(len(left.Elements)) {
-			return newError("index out of range: %d. array length: %d", index.Value, len(left.Elements))
-		}
-		return left.Elements[index.Value]
+		return evalArraySubscriptExpression(left, indexObj)
 
 	case *object.Hash:
-		key, ok := indexObj.(object.Hashable)
-		if !ok {
-			return newError("invalid key type: %s", indexObj.Type())
-		}
-		pair, ok := left.Pairs[key.HashKey()]
-		if !ok {
-			return NULL
-		}
-		return pair.Value
+		return evalHashSubscriptExpression(left, indexObj)
 
 	default:
 		return newError("subscript operator not supported for type: %s", left.Type())
@@ -428,4 +413,27 @@ func evalHashLiteral(hash *ast.HashLiteral, env *object.Environment) object.Obje
 		return err
 	}
 	return &object.Hash{Pairs: pairs}
+}
+
+func evalHashSubscriptExpression(hash *object.Hash, index object.Object) object.Object {
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newError("invalid key type: %s", index.Type())
+	}
+	pair, ok := hash.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+	return pair.Value
+}
+
+func evalArraySubscriptExpression(array *object.Array, index object.Object) object.Object {
+	idx, ok := index.(*object.Integer)
+	if !ok {
+		return newError("non-integer argument to array subscript not supported, got %s", index.Type())
+	}
+	if idx.Value < 0 || idx.Value >= int64(len(array.Elements)) {
+		return newError("index out of range: %d. array length: %d", idx.Value, len(array.Elements))
+	}
+	return array.Elements[idx.Value]
 }
