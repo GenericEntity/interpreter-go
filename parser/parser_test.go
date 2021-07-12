@@ -893,3 +893,51 @@ func testHashLiteral(t *testing.T, expr ast.Expression, expected map[interface{}
 
 	return true
 }
+
+func TestHashSubscriptExpression(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedHash  map[interface{}]interface{}
+		expectedIndex interface{}
+	}{
+		{
+			`{1: 2, 2: 4, 3: 6}[2];`,
+			map[interface{}]interface{}{1: 2, 2: 4, 3: 6},
+			2,
+		},
+		{
+			`{true: 1, 2: false}[true];`,
+			map[interface{}]interface{}{true: 1, 2: false},
+			true,
+		},
+		{
+			`{x: 2, y: 1}[x]`,
+			map[interface{}]interface{}{id{"x"}: 2, id{"y"}: 1},
+			id{"x"},
+		},
+		{
+			`{"hi": 2, "there": 1}["hi"]`,
+			map[interface{}]interface{}{"hi": 2, "there": 1},
+			"hi",
+		},
+		{
+			`{}[123]`,
+			map[interface{}]interface{}{},
+			123,
+		},
+	}
+
+	for _, tt := range tests {
+		program := testParse(t, tt.input)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		subscriptExpr, ok := stmt.Expression.(*ast.SubscriptExpression)
+		if !ok {
+			t.Fatalf("expr not *ast.SubscriptExpression. got=%T", stmt.Expression)
+		}
+
+		testHashLiteral(t, subscriptExpr.Left, tt.expectedHash)
+
+		testLiteralExpression(t, subscriptExpr.Index, tt.expectedIndex)
+	}
+}
