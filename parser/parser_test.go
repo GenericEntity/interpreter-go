@@ -245,6 +245,8 @@ func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface
 		return testIdentifier(t, expr, v.name)
 	case bool:
 		return testBooleanLiteral(t, expr, v)
+	case map[interface{}]interface{}:
+		return testHashLiteral(t, expr, v)
 	}
 	t.Errorf("type of expr not handled. got=%T", expr)
 	return false
@@ -830,40 +832,7 @@ func TestHashLiteralExpression(t *testing.T) {
 		program := testParse(t, tt.input)
 
 		stmt := program.Statements[0].(*ast.ExpressionStatement)
-		hash, ok := stmt.Expression.(*ast.HashLiteral)
-		if !ok {
-			t.Fatalf("expr not *ast.HashLiteral. got=%T", stmt.Expression)
-		}
-
-		if len(hash.Pairs) != len(tt.expected) {
-			t.Fatalf("hash.Pairs is of wrong length. got=%d, want=%d", len(hash.Pairs), len(tt.expected))
-		}
-
-		for key, val := range hash.Pairs {
-			var expectedVal interface{}
-			var ok bool
-
-			switch key := key.(type) {
-			case *ast.IntegerLiteral:
-				expectedVal, ok = tt.expected[int(key.Value)]
-
-			case *ast.Boolean:
-				expectedVal, ok = tt.expected[key.Value]
-
-			case *ast.StringLiteral:
-				expectedVal, ok = tt.expected[key.Value]
-
-			case *ast.Identifier:
-				expectedVal, ok = tt.expected[id{key.Value}]
-
-			default:
-				t.Fatalf("unsupported key type to test: %T (%+v)", key, key)
-			}
-
-			if !ok || !testLiteralExpression(t, val, expectedVal) {
-				t.Fatalf("hash.Pairs contains unexpected pair: <%+v, %+v>.", key, val)
-			}
-		}
+		testHashLiteral(t, stmt.Expression, tt.expected)
 	}
 }
 
@@ -877,6 +846,49 @@ func testStringLiteral(t *testing.T, expr ast.Expression, expectedValue string) 
 	if str.Value != expectedValue {
 		t.Errorf("str.Value not %s. got=%s.", expectedValue, str.Value)
 		return false
+	}
+
+	return true
+}
+
+func testHashLiteral(t *testing.T, expr ast.Expression, expected map[interface{}]interface{}) bool {
+	hash, ok := expr.(*ast.HashLiteral)
+	if !ok {
+		t.Errorf("expr not *ast.HashLiteral. got=%T", expr)
+		return false
+	}
+
+	if len(hash.Pairs) != len(expected) {
+		t.Errorf("hash.Pairs is of wrong length. got=%d, want=%d", len(hash.Pairs), len(expected))
+		return false
+	}
+
+	for key, val := range hash.Pairs {
+		var expectedVal interface{}
+		var ok bool
+
+		switch key := key.(type) {
+		case *ast.IntegerLiteral:
+			expectedVal, ok = expected[int(key.Value)]
+
+		case *ast.Boolean:
+			expectedVal, ok = expected[key.Value]
+
+		case *ast.StringLiteral:
+			expectedVal, ok = expected[key.Value]
+
+		case *ast.Identifier:
+			expectedVal, ok = expected[id{key.Value}]
+
+		default:
+			t.Errorf("unsupported key type to test: %T (%+v)", key, key)
+			return false
+		}
+
+		if !ok || !testLiteralExpression(t, val, expectedVal) {
+			t.Errorf("hash.Pairs contains unexpected pair: <%+v, %+v>.", key, val)
+			return false
+		}
 	}
 
 	return true
