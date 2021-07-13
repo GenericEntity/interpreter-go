@@ -28,10 +28,15 @@ func TestNextToken(t *testing.T) {
 	"foo bar"
 	"\'\"\\\a\b\f\n\r\t\v"
 	"Hello\t\"WORLD\"\n"
+	/* I'm a comment */
 	[2,3,4]
 	arr[true, 3]
-	aHash{"key1": "value1", 5: "value2" }
-	`
+	/* I'm a comment */
+	aHash{"key1":/* I'm a comment */ "value1", 5: "value2" }
+
+	/* I'm a comment */
+	/**//**//**/
+	/**/`
 
 	tests := []struct {
 		expectedType    token.TokenType
