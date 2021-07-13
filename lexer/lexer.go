@@ -51,6 +51,11 @@ func (lex *Lexer) NextToken() token.Token {
 	// some languages check newlines. if so, then they can't be skipped
 	lex.skipWhitespace()
 
+	for lex.isCommentStart() {
+		lex.skipComment()
+		lex.skipWhitespace()
+	}
+
 	switch lex.ch {
 	case '=':
 		if lex.peekChar() == '=' {
@@ -229,4 +234,31 @@ func (lex *Lexer) readString() (string, error) {
 		str.WriteByte(ch)
 	}
 	return str.String(), nil
+}
+
+func (lex *Lexer) isCommentStart() bool {
+	return lex.ch == '/' && lex.peekChar() == '*'
+}
+
+func (lex *Lexer) skipComment() {
+	if !lex.isCommentStart() {
+		return
+	}
+
+	// skip the opening '/', avoid /*/ being a valid comment
+	lex.readChar()
+	for {
+		lex.readChar()
+
+		if lex.ch == 0 {
+			return
+		}
+
+		if lex.ch == '*' && lex.peekChar() == '/' {
+			// leave lex.ch after closing '/'
+			lex.readChar()
+			lex.readChar()
+			return
+		}
+	}
 }
