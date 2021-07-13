@@ -13,8 +13,30 @@ func checkArgsLen(wantedLength int, args ...object.Object) *object.Error {
 	return nil
 }
 
-func newTypeNotSupportedError(funcName string, arg object.Object) *object.Error {
-	return newError("argument to `%s` not supported, got %s", funcName, arg.Type())
+func formatPosition(position int) string {
+	var suffix string
+	if position > 10 && position < 20 {
+		// 11th, 12th, 13th, ..., 19th
+		suffix = "th"
+	} else if position%10 == 1 {
+		// 1st, 21st, 31st, etc.
+		suffix = "st"
+	} else if position%10 == 2 {
+		// 2nd, 22nd, etc.
+		suffix = "nd"
+	} else if position%10 == 3 {
+		// 3rd, 23rd, etc.
+		suffix = "rd"
+	} else {
+		// 0th, 4th, 120th, etc.
+		suffix = "th"
+	}
+
+	return fmt.Sprintf("%d%s", position, suffix)
+}
+
+func newTypeNotSupportedError(funcName string, position int, arg object.Object) *object.Error {
+	return newError("type of %s argument to `%s` not supported, got %s", formatPosition(position), funcName, arg.Type())
 }
 
 var builtins = map[string]*object.Builtin{
@@ -32,7 +54,7 @@ var builtins = map[string]*object.Builtin{
 				return &object.Integer{Value: int64(len(arg.Elements))}
 
 			default:
-				return newTypeNotSupportedError("len", arg)
+				return newTypeNotSupportedError("len", 1, arg)
 			}
 		},
 	},
@@ -51,7 +73,7 @@ var builtins = map[string]*object.Builtin{
 				return arg.Elements[0]
 
 			default:
-				return newTypeNotSupportedError("first", arg)
+				return newTypeNotSupportedError("first", 1, arg)
 			}
 		},
 	},
@@ -71,7 +93,7 @@ var builtins = map[string]*object.Builtin{
 				return arg.Elements[length-1]
 
 			default:
-				return newTypeNotSupportedError("last", arg)
+				return newTypeNotSupportedError("last", 1, arg)
 			}
 		},
 	},
@@ -94,7 +116,7 @@ var builtins = map[string]*object.Builtin{
 				return &object.Array{Elements: elems}
 
 			default:
-				return newTypeNotSupportedError("rest", arg)
+				return newTypeNotSupportedError("rest", 1, arg)
 			}
 		},
 	},
@@ -114,7 +136,7 @@ var builtins = map[string]*object.Builtin{
 				return &object.Array{Elements: elems}
 
 			default:
-				return newTypeNotSupportedError("push", arg)
+				return newTypeNotSupportedError("push", 1, arg)
 			}
 		},
 	},
