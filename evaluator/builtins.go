@@ -149,4 +149,36 @@ var builtins = map[string]*object.Builtin{
 			return NULL
 		},
 	},
+
+	"put": {
+		Fn: func(args ...object.Object) object.Object {
+			const funcName = "put"
+			if err := checkArgsLen(3, args...); err != nil {
+				return err
+			}
+
+			switch arg := args[0].(type) {
+			case *object.Hash:
+				// second arg must be Hashable
+				h, ok := args[1].(object.Hashable)
+				if !ok {
+					return newTypeNotSupportedError(funcName, 2, args[1])
+				}
+
+				// copy map
+				newPairs := make(map[object.HashKey]object.HashPair)
+				for k, v := range arg.Pairs {
+					newPairs[k] = v
+				}
+
+				// add (or replace) key-value pair
+				newPairs[h.HashKey()] = object.HashPair{Key: args[1], Value: args[2]}
+
+				return &object.Hash{Pairs: newPairs}
+
+			default:
+				return newTypeNotSupportedError(funcName, 1, arg)
+			}
+		},
+	},
 }
