@@ -440,6 +440,22 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`push(true, 8)`, errors.New("type of 1st argument to `push` not supported, got BOOLEAN")},
 		{`push(["one"], "two", "three")`, errors.New("wrong number of arguments. got=3, want=2")},
 		{`push(["one"])`, errors.New("wrong number of arguments. got=1, want=2")},
+
+		// put(Hash, key, value)
+		{`put({}, 1 + 0, 2)`, map[interface{}]interface{}{1: 2}},
+		{`put({1: 2, 2: 4, 3: 6}, 1, 10 * 10)`, map[interface{}]interface{}{1: 100, 2: 4, 3: 6}},
+		{`put({true: 1, 2: false}, false, 3);`, map[interface{}]interface{}{true: 1, 2: false, false: 3}},
+		{`put({"hi": 2, "there": 1}, "there", 15)`, map[interface{}]interface{}{"hi": 2, "there": 15}},
+		{`let x = "x"; let y = "not y"; put({x: 2, y: 1}, x, y + "y")`, map[interface{}]interface{}{"x": "not yy", "not y": 1}},
+		{`let h = fn(){ {2 * 2: 2, 5 == 10: 1} }(); put(h, 1, "one")`, map[interface{}]interface{}{4: 2, false: 1, 1: "one"}},
+		{`put("asd", 2, 3)`, errors.New("type of 1st argument to `put` not supported, got STRING")},
+		{`put(5, 1, 2)`, errors.New("type of 1st argument to `put` not supported, got INTEGER")},
+		{`put(true, 8, 1)`, errors.New("type of 1st argument to `put` not supported, got BOOLEAN")},
+		{`put(["one"], 1, 2)`, errors.New("type of 1st argument to `put` not supported, got ARRAY")},
+		{`put({}, [1], 2)`, errors.New("type of 2nd argument to `put` not supported, got ARRAY")},
+		{`put({}, "two")`, errors.New("wrong number of arguments. got=2, want=3")},
+		{`put({})`, errors.New("wrong number of arguments. got=1, want=3")},
+		{`put({}, 1, 2, 3)`, errors.New("wrong number of arguments. got=4, want=3")},
 	}
 
 	for _, tt := range tests {
