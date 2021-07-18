@@ -25,8 +25,5 @@
 
 # End of https://www.toptal.com/developers/gitignore/api/go
 
-### Monkey source code ###
-*.monkey
-
 ### VS Code ###
 __debug_bin
