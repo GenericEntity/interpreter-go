@@ -1,5 +1,5 @@
 # Interpreter in Golang
-This is my 2021 summer personal project: to learn how to build an interpreter from scratch: lexer, parser and evaluator. The whole project is based on Thorsten Ball's [excellent book](https://interpreterbook.com/), so I do not take credit for its design or implementation (except a few minor add-ons).
+This is my 2021 summer personal project: to learn how to build an interpreter from scratch: lexer, parser and evaluator. The project is based on Thorsten Ball's [excellent book](https://interpreterbook.com/), so credit for most of its design and implementation goes to him (except a few minor add-ons).
 
 The interpreted language is [Monkey](https://interpreterbook.com/#the-monkey-programming-language), designed by Thorsten Ball.
 
@@ -7,10 +7,13 @@ The interpreted language is [Monkey](https://interpreterbook.com/#the-monkey-pro
 * [Golang](https://golang.org/) (I used `v1.13`, but earlier versions may work too)
 
 ## How to use
+### Example code
+A few Monkey code examples have been included in `example.monkey` to showcase the capabilities of the interpreter.
+
 ### Read from file
-The `-f` flag specifies the path to a script file to interpret. For example, the following command will attempt to interpret the contents of `./source.monkey`
+The `-f` flag specifies the path to a script file to interpret. For example, the following command will attempt to interpret the contents of `./example.monkey`
 ```bash
-go run main.go -f ./source.monkey
+go run main.go -f ./example.monkey
 ```
 ### Interactive session (REPL)
 If the `-f` flag is omitted, an interactive session (REPL) will be launched instead.
